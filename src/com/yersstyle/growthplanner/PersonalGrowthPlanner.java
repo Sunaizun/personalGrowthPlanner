@@ -4,7 +4,17 @@ import java.sql.*;
 import java.util.*;
 
 
-abstract class Goal {
+interface ProgressLoggable {
+    void logProgress(int amount);
+}
+
+
+interface Displayable {
+    void displayGoalDetails();
+}
+
+
+abstract class Goal implements ProgressLoggable, Displayable {
     protected String name;
     protected String description;
     protected int progress;
@@ -17,13 +27,12 @@ abstract class Goal {
         this.progress = 0;
     }
 
+    @Override
     public void logProgress(int amount) {
         progress += amount;
         if (progress > target) progress = target;
         System.out.println("Progress logged for " + name + ": " + progress + "/" + target);
     }
-
-    public abstract void displayGoalDetails();
 }
 
 
@@ -84,7 +93,13 @@ class GoalFactory {
     }
 }
 
-class DatabaseHelper {
+
+interface GoalRepository {
+    void addGoalToDatabase(Goal goal);
+}
+
+
+class DatabaseHelper implements GoalRepository {
     private static final String URL = "jdbc:postgresql://localhost:5432/personal_growth";
     private static final String USER = "postgres";
     private static final String PASSWORD = "yersultan2006";
@@ -99,13 +114,14 @@ class DatabaseHelper {
         }
     }
 
-    public void addGoalToDatabase(String type, String description, int target) {
+    @Override
+    public void addGoalToDatabase(Goal goal) {
         String sql = "INSERT INTO goals (type, description, target, progress) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, type);
-            stmt.setString(2, description);
-            stmt.setInt(3, target);
-            stmt.setInt(4, 0);
+            stmt.setString(1, goal.name);
+            stmt.setString(2, goal.description);
+            stmt.setInt(3, goal.target);
+            stmt.setInt(4, goal.progress);
             stmt.executeUpdate();
             System.out.println("Goal added to the database.");
         } catch (SQLException e) {
@@ -117,7 +133,7 @@ class DatabaseHelper {
 
 public class PersonalGrowthPlanner {
     private static final Scanner scanner = new Scanner(System.in);
-    private static DatabaseHelper dbHelper = new DatabaseHelper();
+    private static GoalRepository goalRepository = new DatabaseHelper();
 
     public static void main(String[] args) {
         while (true) {
@@ -170,6 +186,7 @@ public class PersonalGrowthPlanner {
                 return;
         }
 
-        dbHelper.addGoalToDatabase(goalType, description, target);
+        Goal goal = GoalFactory.createGoal(goalType, description, target);
+        goalRepository.addGoalToDatabase(goal);
     }
 }
