@@ -3,7 +3,7 @@ package com.yersstyle.growthplanner;
 import java.sql.*;
 import java.util.*;
 
-// Abstract Goal class
+
 abstract class Goal {
     protected String name;
     protected String description;
@@ -26,7 +26,7 @@ abstract class Goal {
     public abstract void displayGoalDetails();
 }
 
-// Subclasses for specific goals
+
 class FinanceGoal extends Goal {
     public FinanceGoal(String description, int target) {
         super("Finance", description, target);
@@ -71,7 +71,7 @@ class WorkoutGoal extends Goal {
     }
 }
 
-// Factory Pattern for Goal creation
+
 class GoalFactory {
     public static Goal createGoal(String type, String description, int target) {
         switch (type.toLowerCase()) {
@@ -84,7 +84,6 @@ class GoalFactory {
     }
 }
 
-// Database helper class
 class DatabaseHelper {
     private static final String URL = "jdbc:postgresql://localhost:5432/personal_growth";
     private static final String USER = "postgres";
@@ -115,7 +114,7 @@ class DatabaseHelper {
     }
 }
 
-// Main application class
+
 public class PersonalGrowthPlanner {
     private static final Scanner scanner = new Scanner(System.in);
     private static DatabaseHelper dbHelper = new DatabaseHelper();
